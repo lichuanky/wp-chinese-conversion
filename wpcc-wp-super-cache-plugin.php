@@ -16,6 +16,19 @@ $GLOBALS['wpcc_options'] = array(
 	'wpcc_auto_language_recong' => ##wpcc_auto_language_recong##,
 );
 
+function func_each(&$array){
+	$res = array();
+	$key = key($array);
+	if($key !== null){
+		next($array); 
+		$res[1] = $res['value'] = $array[$key];
+		$res[0] = $res['key'] = $key;
+	}else{
+		$res = false;
+	}
+	return $res;
+ }
+
 function wp_supercache_wpcc_get_prefered_language($accept_languages, $target_langs, $flag = 0) {
 	$langs = array();
 	preg_match_all('/([a-z]{1,8}(-[a-z]{1,8})?)\s*(;\s*q\s*=\s*(1|0\.[0-9]+))?/i', $accept_languages, $lang_parse);
@@ -40,7 +53,7 @@ function wp_supercache_wpcc_get_prefered_language($accept_languages, $target_lan
 			if(!empty($a)) {
 				$b = array_intersect($array, $langs);
 				if(!empty($b)) {
-					$a = each($a);
+					$a = func_each($a);
 					return $a[1];
 				}
 			}
@@ -50,7 +63,7 @@ function wp_supercache_wpcc_get_prefered_language($accept_languages, $target_lan
 			if(!empty($a)) {
 				$b = array_intersect($array, $langs);
 				if(!empty($b)) {
-					$a = each($a);
+					$a = func_each($a);
 					return $a[1];
 				}
 			}

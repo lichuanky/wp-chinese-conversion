@@ -71,7 +71,8 @@ $wpcc_langs = array(
 
 //容错处理.
 if( $wpcc_options != false && is_array($wpcc_options) && is_array($wpcc_options['wpcc_used_langs']) ) {
-	add_action('widgets_init', create_function('', 'return register_widget("Wpcc_Widget");'));
+	//add_action('widgets_init', create_function('', 'return register_widget("Wpcc_Widget");'));
+	add_action('widgets_init', function() {return register_widget("Wpcc_Widget");});
 	add_filter('query_vars', 'wpcc_insert_query_vars');//修改query_vars钩子,增加一个'variant'公共变量.
 	add_action('init', 'wpcc_init');//插件初始化
 
@@ -79,7 +80,8 @@ if( $wpcc_options != false && is_array($wpcc_options) && is_array($wpcc_options[
 		WP_DEBUG ||
 		( defined('WPCC_DEBUG') && WPCC_DEBUG == true )
 	) {
-		add_action('init', create_function('', 'global $wp_rewrite; $wp_rewrite->flush_rules();'));
+		//add_action('init', create_function('', 'global $wp_rewrite; $wp_rewrite->flush_rules();'));
+		add_action('init', function() {global $wp_rewrite; $wp_rewrite->flush_rules();});
 		add_action('wp_footer', 'wpcc_debug');
 	}
 }
@@ -311,8 +313,19 @@ function wpcc_insert_query_vars($vars) {
  *
  */
 class Wpcc_Widget extends WP_Widget {
-	function Wpcc_Widget() {
-		$this->WP_Widget('widget_wpcc', 'Chinese Conversion', array('classname' => 'widget_wpcc', 'description' =>'Chinese Conversion Widget'));
+	//function Wpcc_Widget() {
+	//	$this->WP_Widget('widget_wpcc', 'Chinese Conversion', array('classname' => 'widget_wpcc', 'description' =>'Chinese Conversion Widget'));
+	//}
+
+	/**
+	 * Sets up the widgets name etc
+	 */
+	public function __construct() {
+		$widget_ops = array( 
+			'classname' => 'widget_wpcc',
+			'description' => 'Chinese Conversion',
+		);
+		parent::__construct( 'widget_wpcc', 'Chinese Conversion Widget', $widget_ops );
 	}
 
 	function widget($args, $instance) {
@@ -895,6 +908,19 @@ function wpcc_output_navi2() {
 	echo $output;
 }
 
+function func_each(&$array){
+	$res = array();
+	$key = key($array);
+	if($key !== null){
+		next($array); 
+		$res[1] = $res['value'] = $array[$key];
+		$res[0] = $res['key'] = $key;
+	}else{
+		$res = false;
+	}
+	return $res;
+ }
+
 /**
  * 从给定的语言列表中, 解析出浏览器客户端首选语言, 返回解析出的语言字符串或false
  *
@@ -942,7 +968,7 @@ function wpcc_get_prefered_language($accept_languages, $target_langs, $flag = 0)
 			if(!empty($a)) {
 				$b = array_intersect($array, $langs);
 				if(!empty($b)) {
-					$a = each($a);
+					$a = func_each($a);
 					return $a[1];
 				}
 			}
@@ -952,7 +978,7 @@ function wpcc_get_prefered_language($accept_languages, $target_langs, $flag = 0)
 			if(!empty($a)) {
 				$b = array_intersect($array, $langs);
 				if(!empty($b)) {
-					$a = each($a);
+					$a = func_each($a);
 					return $a[1];
 				}
 			}
@@ -982,7 +1008,7 @@ function wpcc_is_robot() {
 		'find'
 	);
 
-	while(list($key, $val) = each($robots))
+	while(list($key, $val) = func_each($robots))
 		if(strstr($ua, strtoupper($val)))
 			return true;
 
@@ -999,7 +1025,7 @@ function wpcc_is_robot() {
 		"Lynx",
 	);
 
-	while(list($key, $val) = each($browsers))
+	while(list($key, $val) = func_each($browsers))
 		if(strstr($ua, strtoupper($val)))
 			return false;
 
@@ -1013,7 +1039,8 @@ function wpcc_is_robot() {
  */
 function wpcc_apply_filter_search_rule() {
 	add_filter('posts_where', 'wpcc_filter_search_rule', 100);
-	add_filter('posts_distinct', create_function('$s', 'return \'DISTINCT\';'));
+	//add_filter('posts_distinct', create_function('$s', 'return \'DISTINCT\';'));
+	add_filter('posts_distinct', function($s) {return 'DISTINCT';});
 }
 
 /**
